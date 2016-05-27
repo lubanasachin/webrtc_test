@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>P2P Chat</title>
+<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+	<div class='mainHeader'>
+		<div class='myId' id='myId'></div>
+	</div>
+	<div class='mainSection'>
+		<div class='availablePeers'>
+			<div class='availHeader'>Available Peers</div>
+			<div class='availBody' id='availPeers'>
+			</div>
+		</div>
+		<div class='chatBox' id='chatBox'></div>
+	</div>
+</body>
+</html>
+<script type="text/javascript" src="js/signal.js"></script>
+<script type="text/javascript" src="js/webrtc.js"></script>
+<script type="text/javascript" src="js/peer.js"></script>
+<script type="text/javascript">
+	var PCOBJ = {},
+		CURPID = '';
+	var peer = new peerClient();
+	peer.init();
+</script>

@@ -1,0 +1,23 @@
+{
+  "name": "webrtc-datachannels",
+  "version": "0.0.0",
+  "description": "Streamroot's test for applicant developpers",
+  "scripts": {
+    "test": "node_modules/mocha/bin/mocha",
+    "styleCheck": "./node_modules/jshint/bin/jshint app/ && ./node_modules/echint/bin/echint -v && echo 'Style check OK'",
+    "start":"(node server/signalingServer.js)"
+  },
+  "author": "Sachin Lubana",
+  "license": "GPL",
+  "dependencies": {
+    "ws": "^0.8.0"
+  },
+  "devDependencies": {
+    "echint": "^1.5.0",
+    "http-server": "^0.8.5",
+    "jshint": "^2.8.0",
+    "mocha": "*",
+    "should": "^7.1.1",
+    "sinon": "^1.17.2"
+  }
+}
