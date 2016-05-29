@@ -5,7 +5,8 @@ function peerClient() {
         socketUrl 	= "ws://localhost:8090/",						//web socket server URL
 		signal 		= new signalClient(),							//signaling client obj
 		webrtcObj 	= new webrtc(signal,onMessageReceived),			//webrtc function obj
-		self		= this;
+		self		= this,
+		chunkStore	= [];
 		document.getElementById('myId').innerHTML = 'My ID: '+myId;	
 
 	/**
@@ -53,9 +54,24 @@ function peerClient() {
 	* @params
 	* @returns
 	*/
-	function onMessageReceived(peerid,message) {
+	function onMessageReceived(peerid,data) {
 		createChatBox(peerid);
-		addMessage(peerid,message,0);
+		data = JSON.parse(data);
+		if(data && typeof data === 'object') {
+			if(data.file == true) {
+				chunkStore.push(data.message);
+				if(data.last) {
+					var finData = chunkStore.join('');
+					var flink = '<a href="'+finData+'" target="_blank">'+data.fileName+'</a>';
+					var message = 'File '+flink+' received successfully';
+					addMessage(peerid,message,0);
+					chunkStore=[];
+				}			
+			} else {
+				data = JSON.stringify(data);
+				addMessage(peerid,data,0);
+			}
+		} else addMessage(peerid,data,0);
 	}
 
 	/**
@@ -75,13 +91,68 @@ function peerClient() {
 	* @returns
 	*/
 	function _onSendToPeer(peerId) {
-		if(PCOBJ[peerId] != undefined) {
-			var message = document.getElementById('txtMessage_'+peerId).value;
-			PCOBJ[peerId]['dc'].send(message);
+		var message = document.getElementById('txtMessage_'+peerId).value;
+		if(PCOBJ[peerId] != undefined && message != '') {
+			PCOBJ[peerId]['dc'].send(JSON.stringify(message));
 			addMessage(peerId,message,1);
 			document.getElementById('txtMessage_'+peerId).value = '';
 		}
 	}
+
+
+    /**
+    * send file to a peer in chunks
+    * @params
+    * @returns
+    */
+    function _onSendFileToPeer(peerId,file) {
+        if(PCOBJ[peerId] != undefined) {
+			document.getElementById('file_'+peerId).disabled = true;
+            var file = file.files[0];
+
+			var freader = new window.FileReader();
+			freader.readAsDataURL(file);
+
+			freader.onload = (function(theFile) {
+        		return function(e) {
+					var ftext = e.target.result;
+					readDataInChunks(e.target.result,peerId,theFile.name);
+        		};
+      		})(file);
+			var message = 'Sending file '+file.name;
+            addMessage(peerId,message,1);
+            document.getElementById('file_'+peerId).value = '';
+        }
+    }
+
+    /**
+    * read file data in chunks
+    * @params
+    * @returns
+    */
+	function readDataInChunks(text,peerId,fileName) {
+		console.log('sending file in chunk');
+		var chunkSize = 10000,
+			data = {};
+			data.file = true;
+			data.fileName = fileName;
+    	if (text.length > chunkSize) data.message = text.slice(0, chunkSize); 
+		else {
+			data.message = text;
+			data.last = true;
+			var message = 'File sent successfully';
+            addMessage(peerId,message,1);
+			document.getElementById('file_'+peerId).disabled = false;
+		}
+		PCOBJ[peerId]['dc'].send(JSON.stringify(data));
+		var remainingDataURL = text.slice(data.message.length);
+    	if (remainingDataURL.length) {
+			setTimeout(function () {
+        		readDataInChunks(remainingDataURL,peerId,fileName); 
+    		}, 500)
+		} 
+	}
+
 
 	/**
 	* populate available peers list
@@ -140,17 +211,22 @@ function peerClient() {
 		msgBox.id = 'msg_'+peerid;
 		msgBox.className = 'messageBox';
 		var inHtml = "<div class='messageBoxHead'>Chat: "+peerid+"</div><div class='rcvdMessage' id='rcvdMessage_"+peerid+"'></div>";
-		inHtml += "<div class='textMessage'><textarea maxlength='100' id='txtMessage_"+peerid+"'></textarea></div>";
-		inHtml += "<div class='messageButtons'><button id='btSend_"+peerid+"'>Send</button></div>";
+		inHtml += "<div class='textMessage'><input type='text' maxlength='100' id='txtMessage_"+peerid+"' /></div>";
+		inHtml += "<div class='messageButtons'><button id='btSend_"+peerid+"'>Send</button>&nbsp;<input type='file' class='fileSel' id='file_"+peerid+"' /></div>";
 		msgBox.innerHTML = inHtml;
 		chatBox.appendChild(msgBox);
 		document.getElementById('btSend_'+peerid).addEventListener('click', function(event) {
 			var pid = event.srcElement.id.split("_");
 			self.sendToPeer(pid[pid.length-1]);
 		},false);	
+		document.getElementById('file_'+peerid).addEventListener('change', function(event) {
+			var pid = event.srcElement.id.split("_");
+			self.sendFileToPeer(pid[pid.length-1],this);
+		},false);	
 	}
 
 	this.init = _onInit;
 	this.startPeer = _onStart;
 	this.sendToPeer = _onSendToPeer;
+	this.sendFileToPeer = _onSendFileToPeer;
 }
