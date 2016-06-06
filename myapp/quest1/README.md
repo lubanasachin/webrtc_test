@@ -72,7 +72,7 @@ http://localhost/quest1/client/peer.html
 
 ### Available Peers 
 
-![Peers](http://meetonsnap.com/available_peers.png.png)
+![Peers](http://meetonsnap.com/available_peers.png)
 
 ### File Sharing
 
