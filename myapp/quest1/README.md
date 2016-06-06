@@ -9,11 +9,13 @@ mChat is
 - provides a simple web interface to send receive message from random peers
 - web interface is developed using HTML5, Javascript
 
-Peers are given random generated ID & are shown as available in Peer List when they connect to socket server.
-Presence management is done with the socket server.
-WebRTC Offer-Answer model is initiated whenever user clicks on any available peer to start chat
-If peer connection for given user already exists, it uses the existing peer connection.
-Peer connection for all the connected peers are store in PCOBJ object
+### How mChat works?
+
+- Peers are given random generated ID & are shown as available in Peer List when they connect to socket server.
+- Presence management is done with the socket server.
+- WebRTC Offer-Answer model is initiated whenever user clicks on any available peer to start chat
+- If peer connection for given user already exists, it uses the existing peer connection.
+- Peer connection for all the connected peers are store in PCOBJ object
 
 The following links may be useful:
 
@@ -52,9 +54,7 @@ to download the zip file.
 To run mChat, execute following command from the project directory
 
 ```shell
-nohup npm start > /location/to/log/file.log &
-disown
-tail -f /localtion/to/log/file.log
+npm start
 ```
 
 To use mChat, visit the following URL
@@ -70,10 +70,3 @@ http://localhost/quest1/client/peer.html
 
 ![Chat Dashboard](http://meetonsnap.com/webchat.png)
 
-### Available Peers 
-
-![Peers](http://meetonsnap.com/available_peers.png)
-
-### File Sharing
-
-![File] (http://meetonsnap.com/file_recvd.png)
